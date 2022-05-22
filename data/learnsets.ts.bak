@@ -91158,5 +91158,5 @@ export const Learnsets: {[speciesid: string]: LearnsetData} = {
 			wildcharge: ["8L1"],
 			wonderroom: ["8L1"],
 		},
-	}
+	},
 };
