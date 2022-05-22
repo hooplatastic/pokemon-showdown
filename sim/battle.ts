@@ -461,7 +461,6 @@ export class Battle {
 				if (!handler.state.duration) {
 					const endCallArgs = handler.endCallArgs || [handler.effectHolder, effect.id];
 					handler.end.call(...endCallArgs as [any, ...any[]]);
-					if (this.ended) return;
 					continue;
 				}
 			}
@@ -516,7 +515,7 @@ export class Battle {
 			return relayVar;
 		}
 		if (eventid !== 'End' && effect.effectType === 'Ability' && (target instanceof Pokemon) && target.ignoringAbility()) {
-			this.debug(eventid + ' handler suppressed by Gastro Acid or Neutralizing Gas');
+			this.debug(eventid + ' handler suppressed by Gastro Acid');
 			return relayVar;
 		}
 		if (
@@ -693,7 +692,7 @@ export class Battle {
 			}
 		}
 
-		if (['Invulnerability', 'TryHit', 'DamagingHit', 'EntryHazard'].includes(eventid)) {
+		if (eventid === 'Invulnerability' || eventid === 'TryHit' || eventid === 'DamagingHit') {
 			handlers.sort(Battle.compareLeftToRightOrder);
 		} else if (fastExit) {
 			handlers.sort(Battle.compareRedirectOrder);
@@ -787,7 +786,7 @@ export class Battle {
 			} else if (eventid !== 'End' && effect.effectType === 'Ability' &&
 					(effectHolder instanceof Pokemon) && effectHolder.ignoringAbility()) {
 				if (eventid !== 'Update') {
-					this.debug(eventid + ' handler suppressed by Gastro Acid or Neutralizing Gas');
+					this.debug(eventid + ' handler suppressed by Gastro Acid');
 				}
 				continue;
 			}
@@ -1401,20 +1400,6 @@ export class Battle {
 		this.turn++;
 		this.lastSuccessfulMoveThisTurn = null;
 
-		const dynamaxEnding: Pokemon[] = [];
-		for (const pokemon of this.getAllActive()) {
-			if (pokemon.volatiles['dynamax']?.turns === 3) {
-				dynamaxEnding.push(pokemon);
-			}
-		}
-		if (dynamaxEnding.length > 1) {
-			this.updateSpeed();
-			this.speedSort(dynamaxEnding);
-		}
-		for (const pokemon of dynamaxEnding) {
-			pokemon.removeVolatile('dynamax');
-		}
-
 		const trappedBySide: boolean[] = [];
 		const stalenessBySide: ('internal' | 'external' | undefined)[] = [];
 		for (const side of this.sides) {
@@ -1442,6 +1427,7 @@ export class Battle {
 				}
 				this.runEvent('DisableMove', pokemon);
 				if (!pokemon.ateBerry) pokemon.disableMove('belch');
+				if (!pokemon.ateBerry) pokemon.disableMove('citrusblast'); 
 				if (!pokemon.getItem().isBerry) pokemon.disableMove('stuffcheeks');
 
 				// If it was an illusion, it's not any more
@@ -1544,80 +1530,28 @@ export class Battle {
 		if (this.gen === 2) this.quickClawRoll = this.randomChance(60, 256);
 		if (this.gen === 3) this.quickClawRoll = this.randomChance(1, 5);
 
-		// Crazyhouse Progress checker because sidebars has trouble keeping track of Pokemon.
-		// Please remove me once there is client support.
-		if (this.ruleTable.has('crazyhouserule')) {
-			for (const side of this.sides) {
-				let buf = `raw|${side.name}'s team:<br />`;
-				for (const pokemon of side.pokemon) {
-					if (!buf.endsWith('<br />')) buf += '/</span>&#8203;';
-					if (pokemon.fainted) {
-						buf += `<span style="white-space:nowrap;"><span style="opacity:.3"><psicon pokemon="${pokemon.species.id}" /></span>`;
-					} else {
-						buf += `<span style="white-space:nowrap"><psicon pokemon="${pokemon.species.id}" />`;
-					}
-				}
-				this.add(`${buf}</span>`);
-			}
-		}
-
 		this.makeRequest('move');
 	}
 
 	maybeTriggerEndlessBattleClause(
 		trappedBySide: boolean[], stalenessBySide: ('internal' | 'external' | undefined)[]
 	) {
-		// Gen 1 Endless Battle Clause triggers
-		// These are checked before the 100 turn minimum as the battle cannot progress if they are true
-		if (this.gen <= 1) {
-			const noProgressPossible = this.sides.every(side => {
-				const foeAllGhosts = side.foe.pokemon.every(pokemon => pokemon.fainted || pokemon.types.includes('Ghost'));
-				const foeAllTransform = side.foe.pokemon.every(pokemon => (
-					pokemon.fainted ||
-					// true if transforming into this pokemon would lead to an endless battle
-					// Transform will fail (depleting PP) if used against Ditto in Stadium 1
-					(this.dex.currentMod !== 'gen1stadium' || pokemon.species.id !== 'ditto') &&
-					// there are some subtleties such as a Mew with only Transform and auto-fail moves,
-					// but it's unlikely to come up in a real game so there's no need to handle it
-					pokemon.moves.every(moveid => moveid === 'transform')
-				));
-				return side.pokemon.every(pokemon => (
-					pokemon.fainted ||
-					// frozen pokemon can't thaw in gen 1 without outside help
-					pokemon.status === 'frz' ||
-					// a pokemon can't lose PP if it Transforms into a pokemon with only Transform
-					(pokemon.moves.every(moveid => moveid === 'transform') && foeAllTransform) ||
-					// Struggle can't damage yourself if every foe is a Ghost
-					(pokemon.moveSlots.every(slot => slot.pp === 0) && foeAllGhosts)
-				));
-			});
-			if (noProgressPossible) {
-				this.add('-message', `This battle cannot progress. Endless Battle Clause activated!`);
-				return this.tie();
-			}
-		}
+		if (this.turn <= 100 || !this.ruleTable.has('endlessbattleclause')) return;
+		// for now, FFA doesn't support the endless battle clause
+		if (this.format.gameType === 'freeforall') return;
 
-		if (this.turn <= 100) return;
-
-		// the turn limit is not a part of Endless Battle Clause
-		if (this.turn >= 1000) {
-			this.add('message', `It is turn 1000. You have hit the turn limit!`);
-			this.tie();
-			return true;
-		}
-		if (
-			(this.turn >= 500 && this.turn % 100 === 0) || // every 100 turns past turn 500,
-			(this.turn >= 900 && this.turn % 10 === 0) || // every 10 turns past turn 900,
-			this.turn >= 990 // every turn past turn 990
-		) {
+		if ((this.turn >= 500 && this.turn % 100 === 0) ||
+			(this.turn >= 900 && this.turn % 10 === 0) ||
+			(this.turn >= 990)) {
 			const turnsLeft = 1000 - this.turn;
+			if (turnsLeft < 0) {
+				this.add('message', `It is turn 1000. Endless Battle Clause activated!`);
+				this.tie();
+				return true;
+			}
 			const turnsLeftText = (turnsLeft === 1 ? `1 turn` : `${turnsLeft} turns`);
 			this.add('bigerror', `You will auto-tie if the battle doesn't end in ${turnsLeftText} (on turn 1000).`);
 		}
-
-		if (!this.ruleTable.has('endlessbattleclause')) return;
-		// for now, FFA doesn't support Endless Battle Clause
-		if (this.format.gameType === 'freeforall') return;
 
 		// Are all Pokemon on every side stale, with at least one side containing an externally stale Pokemon?
 		if (!stalenessBySide.every(s => !!s) || !stalenessBySide.some(s => s === 'external')) return;
@@ -2119,12 +2053,6 @@ export class Battle {
 		return stats;
 	}
 
-	finalModify(relayVar: number) {
-		relayVar = this.modify(relayVar, this.event.modifier);
-		this.event.modifier = 1;
-		return relayVar;
-	}
-
 	getCategory(move: string | Move) {
 		return this.dex.moves.get(move).category || 'Physical';
 	}
@@ -2245,11 +2173,11 @@ export class Battle {
 		if (this.activePerHalf > 2) {
 			if (move.target === 'adjacentFoe' || move.target === 'normal' || move.target === 'randomNormal') {
 				// even if a move can target an ally, auto-resolution will never make it target an ally
-				// i.e. if both your opponents faint before you use Flamethrower, it will fail instead of targeting your ally
+				// i.e. if both your opponents faint before you use Flamethrower, it will fail instead of targeting your all
 				const adjacentFoes = pokemon.adjacentFoes();
 				if (adjacentFoes.length) return this.sample(adjacentFoes);
-				// no valid target at all, return slot directly across for any possible redirection
-				return pokemon.side.foe.active[pokemon.side.foe.active.length - 1 - pokemon.position];
+				// no valid target at all, return a possibly-fainted foe for any possible redirection
+				return pokemon.side.foe.active[0];
 			}
 		}
 		return pokemon.side.randomFoe() || pokemon.side.foe.active[0];
@@ -2395,43 +2323,6 @@ export class Battle {
 
 			this.add('start');
 
-			// Change Zacian/Zamazenta into their Crowned formes
-			for (const pokemon of this.getAllPokemon()) {
-				let rawSpecies: Species | null = null;
-				if (pokemon.species.id === 'zacian' && pokemon.item === 'rustedsword') {
-					rawSpecies = this.dex.species.get('Zacian-Crowned');
-				} else if (pokemon.species.id === 'zamazenta' && pokemon.item === 'rustedshield') {
-					rawSpecies = this.dex.species.get('Zamazenta-Crowned');
-				}
-				if (!rawSpecies) continue;
-				const species = pokemon.setSpecies(rawSpecies);
-				if (!species) continue;
-				pokemon.baseSpecies = rawSpecies;
-				pokemon.details = species.name + (pokemon.level === 100 ? '' : ', L' + pokemon.level) +
-					(pokemon.gender === '' ? '' : ', ' + pokemon.gender) + (pokemon.set.shiny ? ', shiny' : '');
-				pokemon.setAbility(species.abilities['0'], null, true);
-				pokemon.baseAbility = pokemon.ability;
-
-				const behemothMove: {[k: string]: string} = {
-					'Zacian-Crowned': 'behemothblade', 'Zamazenta-Crowned': 'behemothbash',
-				};
-				const ironHead = pokemon.baseMoves.indexOf('ironhead');
-				if (ironHead >= 0) {
-					const move = this.dex.moves.get(behemothMove[rawSpecies.name]);
-					pokemon.baseMoveSlots[ironHead] = {
-						move: move.name,
-						id: move.id,
-						pp: (move.noPPBoosts || move.isZ) ? move.pp : move.pp * 8 / 5,
-						maxpp: (move.noPPBoosts || move.isZ) ? move.pp : move.pp * 8 / 5,
-						target: move.target,
-						disabled: false,
-						disabledSource: '',
-						used: false,
-					};
-					pokemon.moveSlots = pokemon.baseMoveSlots.slice();
-				}
-			}
-
 			if (this.format.onBattleStart) this.format.onBattleStart.call(this);
 			for (const rule of this.ruleTable.keys()) {
 				if ('+*-!'.includes(rule.charAt(0))) continue;
@@ -2472,7 +2363,7 @@ export class Battle {
 			action.pokemon.side.dynamaxUsed = true;
 			if (action.pokemon.side.allySide) action.pokemon.side.allySide.dynamaxUsed = true;
 			break;
-		case 'beforeTurnMove':
+		case 'beforeTurnMove': {
 			if (!action.pokemon.isActive) return false;
 			if (action.pokemon.fainted) return false;
 			this.debug('before turn callback: ' + action.move.id);
@@ -2481,13 +2372,7 @@ export class Battle {
 			if (!action.move.beforeTurnCallback) throw new Error(`beforeTurnMove has no beforeTurnCallback`);
 			action.move.beforeTurnCallback.call(this, action.pokemon, target);
 			break;
-		case 'priorityChargeMove':
-			if (!action.pokemon.isActive) return false;
-			if (action.pokemon.fainted) return false;
-			this.debug('priority charge callback: ' + action.move.id);
-			if (!action.move.priorityChargeCallback) throw new Error(`priorityChargeMove has no priorityChargeCallback`);
-			action.move.priorityChargeCallback.call(this, action.pokemon);
-			break;
+		}
 
 		case 'event':
 			this.runEvent(action.event!, action.pokemon);
@@ -2643,7 +2528,7 @@ export class Battle {
 
 		if (this.gen < 5) this.eachEvent('Update');
 
-		if (this.gen >= 8 && (this.queue.peek()?.choice === 'move' || this.queue.peek()?.choice === 'runDynamax')) {
+		if (this.gen >= 8 && this.queue.peek()?.choice === 'move') {
 			// In gen 8, speed is updated dynamically so update the queue's speed properties and sort it.
 			this.updateSpeed();
 			for (const queueAction of this.queue.list) {
