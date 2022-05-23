@@ -17822,7 +17822,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		baseStats: {hp: 38, atk: 20, def: 68, spa: 20, spd: 60, spe: 41},
 		abilities: {0: "Water Bubble", H: "Clear Body"},
 		weightkg: 80,
-		evos: ["Gouramini"], 
+		evos: ["Mecherel"], 
 	},
 	mecherel: {
 		num: 9073,
