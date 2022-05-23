@@ -197,11 +197,7 @@ export const Teams = new class Teams {
 		if (!buf) return null;
 		if (typeof buf !== 'string') return buf;
 		if (buf.startsWith('[') && buf.endsWith(']')) {
-			try {
-				buf = this.pack(JSON.parse(buf));
-			} catch {
-				return null;
-			}
+			buf = this.pack(JSON.parse(buf));
 		}
 
 		const team = [];
@@ -553,7 +549,7 @@ export const Teams = new class Teams {
 					}
 				}
 				return team;
-			} catch {}
+			} catch (e) {}
 		}
 
 		const lines = buffer.split("\n");
