@@ -4506,12 +4506,12 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		num: 2001,
 	},
 	electroreception: {
-		onSourceModifyAccuracyPriority: -1,
-		onSourceModifyAccuracy(accuracy) {
-			if (typeof accuracy !== 'number') return;
-			this.debug('compoundeyes - enhancing accuracy');
-			return this.chainModify([5325, 4096]);
-		},
+		//onSourceModifyAccuracyPriority: -1,
+		//onSourceModifyAccuracy(accuracy) {
+		//	if (typeof accuracy !== 'number') return;
+		//	this.debug('compoundeyes - enhancing accuracy');
+		//	return this.chainModify([5325, 4096]);
+		//},
 		name: "Electroreception",
 		rating: 3,
 		num: 2003,
