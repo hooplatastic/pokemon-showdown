@@ -4504,7 +4504,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		name: "Chitinize",
 		rating: 4,
 		num: 2001,
-	}
+	},
 	electroreception: {
 		onSourceModifyAccuracyPriority: -1,
 		onSourceModifyAccuracy(accuracy) {
