@@ -1740,13 +1740,5 @@ export const AbilitiesText: {[k: string]: AbilityText} = {
 		name: "Chitinize",
 		desc: "This Pokemon's Normal-type moves become Bug-type moves and have their power multiplied by 1.2. This effect comes after other effects that change a move's type, but before Ion Deluge and Electrify's effects.",
 		shortDesc: "This Pokemon's Normal-type moves become Bug type and have 1.2x power.",
-	},
-	electroreception: {
-		name: "Electro-Reception",
-		shortDesc: "This Pokemon's moves have their accuracy multiplied by 1.3.",
-	},
-	fieldreport: {
-		name: "Field Report",
-		shortDesc: "This Pokemon's weather and terrain moves have priority raised by 1.",
 	}
 };
