@@ -4518,7 +4518,7 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 	},
 	fieldreport: {
 		onModifyPriority(priority, pokemon, target, move) {
-			if (move?.category === 'Status') {
+			if (move?.id === 'sunnyday'  || move?.id === 'raindance' || move?.id === 'sandstorm' || move?.id === 'hail' || move?.id === 'grassyterrain' || move?.id === 'electricterrain' || move?.id === 'mistyterrain' || move?.id === 'psychicterrain') {
 				move.pranksterBoosted = true;
 				return priority + 1;
 			}
