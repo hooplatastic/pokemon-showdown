@@ -17821,7 +17821,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		name: "Axowattl",
 		types: ["Electric"],
 		baseStats: {hp: 45, atk: 40, def: 40, spa: 53, spd: 55, spe: 50},
-		abilities: {0: "Damp", 1: "Tough Claws", H: "Water Absorb"},
+		abilities: {0: "Damp", 1: "Electroreception", H: "Water Absorb"},
 		weightkg: 14,
 		evos: ["Mholm"], 
 	},
@@ -17830,7 +17830,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		name: "Mholm",
 		types: ["Electric"],
 		baseStats: {hp: 70, atk: 60, def: 60, spa: 90, spd: 92, spe: 73},
-		abilities: {0: "Damp", 1: "Tough Claws", H: "Water Absorb"},
+		abilities: {0: "Damp", 1: "Electroreception", H: "Water Absorb"},
 		weightkg: 30,
 	},
 	gouramini: {
