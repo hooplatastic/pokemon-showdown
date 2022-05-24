@@ -1744,5 +1744,9 @@ export const AbilitiesText: {[k: string]: AbilityText} = {
 	electroreception: {
 		name: "Electroreception",
 		shortDesc: "This Pokemon's moves have their accuracy multiplied by 1.3.",
+	},
+	fieldreport: {
+		name: "Field Report",
+		shortDesc: "This Pokemon's weather and terrain moves have their priority increased by 1.",
 	}
 };
