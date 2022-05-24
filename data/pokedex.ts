@@ -17452,7 +17452,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		types: ["Ground"],
 		genderRatio: {M: 0.5, F: 0.5},
 		baseStats: {hp: 100, atk: 75, def: 80, spa: 80, spd: 80, spe: 40},
-		abilities: {0: "Tough Claws", H: "Mimicry"},
+		abilities: {0: "Field Report", H: "Mimicry"},
 		weightkg: 48,
 	},
 	knitnat: {
