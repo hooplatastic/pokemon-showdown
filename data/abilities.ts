@@ -4504,5 +4504,27 @@ export const Abilities: {[abilityid: string]: AbilityData} = {
 		name: "Chitinize",
 		rating: 4,
 		num: 2001,
-	}
+	},
+	electroreception: {
+		onSourceModifyAccuracyPriority: -1,
+		onSourceModifyAccuracy(accuracy) {
+			if (typeof accuracy !== 'number') return;
+			this.debug('compoundeyes - enhancing accuracy');
+			return this.chainModify([5325, 4096]);
+		},
+		name: "Electro-Reception",
+		rating: 3,
+		num: 2003,
+	},
+	fieldreport: {
+		onModifyPriority(priority, pokemon, target, move) {
+			if (move?.id === 'sunnyday' || move?.id === 'raindance' || move?.id === 'sandstorm' || move?.id === 'hail' || move?.id === 'grassyterrain' || move?.id === 'electricterrain' || move?.id === 'mistyterrain' || move?.id === 'psychicterrain') {
+				move.pranksterBoosted = true;
+				return priority + 1;
+			}
+		},
+		name: "Field Report",
+		rating: 4,
+		num: 2004,
+	},
 };

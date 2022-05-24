@@ -17452,7 +17452,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		types: ["Ground"],
 		genderRatio: {M: 0.5, F: 0.5},
 		baseStats: {hp: 100, atk: 75, def: 80, spa: 80, spd: 80, spe: 40},
-		abilities: {0: "Air Lock", H: "Mimicry"},
+		abilities: {0: "Field Report", H: "Mimicry"},
 		weightkg: 48,
 	},
 	knitnat: {
@@ -17821,7 +17821,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		name: "Axowattl",
 		types: ["Electric"],
 		baseStats: {hp: 45, atk: 40, def: 40, spa: 53, spd: 55, spe: 50},
-		abilities: {0: "Damp", 1: "Air Lock", H: "Water Absorb"},
+		abilities: {0: "Damp", 1: "Electro-Reception", H: "Water Absorb"},
 		weightkg: 14,
 		evos: ["Mholm"], 
 	},
@@ -17830,7 +17830,7 @@ export const Pokedex: {[speciesid: string]: SpeciesData} = {
 		name: "Mholm",
 		types: ["Electric"],
 		baseStats: {hp: 70, atk: 60, def: 60, spa: 90, spd: 92, spe: 73},
-		abilities: {0: "Damp", 1: "Air Lock", H: "Water Absorb"},
+		abilities: {0: "Damp", 1: "Electro-Reception", H: "Water Absorb"},
 		weightkg: 30,
 	},
 	gouramini: {
